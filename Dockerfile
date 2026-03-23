@@ -36,14 +36,13 @@ WORKDIR /var/www/html
 RUN echo "DirectoryIndex index.html index.php" \
     > /etc/apache2/conf-enabled/directory-index.conf
 
-# Xdebug configuration (values can be overridden via docker-compose env vars)
-RUN { \
-    echo "xdebug.mode=\${XDEBUG_MODE}"; \
-    echo "xdebug.start_with_request=\${XDEBUG_START_WITH_REQUEST}"; \
-    echo "xdebug.client_host=\${XDEBUG_CLIENT_HOST}"; \
-    echo "xdebug.client_port=\${XDEBUG_CLIENT_PORT}"; \
-    echo "xdebug.idekey=\${XDEBUG_IDEKEY}"; \
-      echo "xdebug.log_level=0"; \
-    } > /usr/local/etc/php/conf.d/zz-xdebug.ini
+# Entrypoint writes Xdebug ini at container start (env vars resolved at runtime)
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && touch /usr/local/etc/php/conf.d/zz-xdebug.ini \
+    && chmod 666 /usr/local/etc/php/conf.d/zz-xdebug.ini
 
 EXPOSE 8080
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "/var/www/html"]
