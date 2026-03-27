@@ -44,5 +44,5 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
 
 EXPOSE 8080
 
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+# ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["php", "-S", "0.0.0.0:8080", "-t", "/var/www/html"]

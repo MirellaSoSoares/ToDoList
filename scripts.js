@@ -2,6 +2,7 @@ const button = document.querySelector('.button-add-task')
 const input = document.querySelector('.input-task')
 const completeList = document.querySelector('.list-task')
 
+
 const API_URL = 'api/tasks.php'
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -21,6 +22,7 @@ function mostrarTarefas(tarefas) {
             <li class="task ${tarefa.completed ? 'done' : ''}" data-id="${tarefa.id}" data-completed="${tarefa.completed}">
                 <img src="./img/check-mark.png" alt="check-na-tarefa" data-action="toggle">
                 <p>${titulo}</p>
+                <img src="./img/edit.png" alt="editar-tarefa" data-action="edit">
                 <img src="./img/delete.png" alt="deletar-tarefa" data-action="delete">
             </li>
         `
@@ -118,5 +120,39 @@ completeList.addEventListener('click', (e) => {
         itemFeito(id, completed)
     } else if (action === 'delete') {
         deletarItem(id)
+    } 
+    else if (action === 'edit') {
+        const p = li.querySelector ('p')
+        const tituloAtual = p.textContent
+        // Substituir o <p> pelo input com o texto atual
+        p.innerHTML = `<input type="text" class="edit-input"
+        value="${tituloAtual}" />`
+        const inputEdit = p.querySelector('input')
+        inputEdit.focus()
+        inputEdit.select()
+        inputEdit.addEventListener('keydown', async (event) => {
+            if (event.key === 'Enter') {
+                const novoTitulo = inputEdit.value.trim()
+                if (!novoTitulo) return
+
+                // Enviar atualização para o backend
+                try {
+                   const resposta = await fetch(`${API_URL}?id=${id}`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({title: novoTitulo}) 
+                        })
+                        if (!resposta.ok){
+                        const erro = await resposta.json()
+                        console.error('Erro ao atualizar tarefa:',
+                    erro.error)
+                        return
+                    }
+                    await recarregarTarefas()
+                    } catch(err) {
+                     console.error('Erro ao atualizar tarefa:', err)
+                }
+            }
+        })
     }
 })
