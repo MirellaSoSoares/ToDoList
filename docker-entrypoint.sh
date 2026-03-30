@@ -11,4 +11,8 @@ xdebug.idekey=${XDEBUG_IDEKEY:-VSCODE}
 xdebug.log_level=0
 INI
 
+<<<<<<< HEAD
 exec "$@"
+=======
+exec "$@"
+>>>>>>> 7ffc7ceae2c0cc0b17fb297a60ab9d6604aa9243

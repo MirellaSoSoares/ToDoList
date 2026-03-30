@@ -14,8 +14,12 @@
         "max_children": 256,
         "max_data": 1024,
         "max_depth": 5
+<<<<<<< HEAD
+      }
+=======
       },
       "hostname": "0.0.0.0"
+>>>>>>> 7ffc7ceae2c0cc0b17fb297a60ab9d6604aa9243
     }
   ]
 }

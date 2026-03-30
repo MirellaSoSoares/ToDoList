@@ -1,15 +1,16 @@
 const button = document.querySelector('.button-add-task')
 const input = document.querySelector('.input-task')
 const completeList = document.querySelector('.list-task')
+<<<<<<< HEAD
+=======
 
 
+>>>>>>> 7ffc7ceae2c0cc0b17fb297a60ab9d6604aa9243
 const API_URL = 'api/tasks.php'
 
 // ── Render ────────────────────────────────────────────────────────────────────
-
 function mostrarTarefas(tarefas) {
     let novaLi = ''
-
     tarefas.forEach((tarefa) => {
         const titulo = tarefa.title
             .replace(/&/g, '&amp;')
@@ -20,19 +21,21 @@ function mostrarTarefas(tarefas) {
 
         novaLi += `
             <li class="task ${tarefa.completed ? 'done' : ''}" data-id="${tarefa.id}" data-completed="${tarefa.completed}">
-                <img src="./img/check-mark.png" alt="check-na-tarefa" data-action="toggle">
+                <img class="checkmark" src="./img/check-mark.png" alt="check-na-tarefa" data-action="toggle">
                 <p>${titulo}</p>
+<<<<<<< HEAD
+                <img class="delete" src="./img/delete.png" alt="deletar-tarefa" data-action="delete">
+=======
                 <img src="./img/edit.png" alt="editar-tarefa" data-action="edit">
                 <img src="./img/delete.png" alt="deletar-tarefa" data-action="delete">
+>>>>>>> 7ffc7ceae2c0cc0b17fb297a60ab9d6604aa9243
             </li>
         `
     })
-
     completeList.innerHTML = novaLi
 }
 
 // ── API calls ─────────────────────────────────────────────────────────────────
-
 async function recarregarTarefas() {
     try {
         const resposta = await fetch(API_URL)
@@ -47,9 +50,7 @@ async function recarregarTarefas() {
 async function adicionarNovaTarefa() {
     const titulo = input.value.trim()
     if (!titulo) return
-
     input.value = ''
-
     try {
         const resposta = await fetch(API_URL, {
             method: 'POST',
@@ -67,6 +68,7 @@ async function adicionarNovaTarefa() {
     }
 }
 
+// Função para marcar/desmarcar tarefa e disparar confete se marcada como feita
 async function itemFeito(id, concluida) {
     try {
         const resposta = await fetch(`${API_URL}?id=${id}`, {
@@ -80,6 +82,14 @@ async function itemFeito(id, concluida) {
             return
         }
         await recarregarTarefas()
+        // Disparar confete somente se tarefa foi marcada como feita
+        if (!concluida) {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          })
+        }
     } catch (err) {
         console.error('Erro ao atualizar tarefa:', err)
     }
@@ -100,7 +110,6 @@ async function deletarItem(id) {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-
 recarregarTarefas()
 button.addEventListener('click', adicionarNovaTarefa)
 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') adicionarNovaTarefa() })
@@ -108,13 +117,10 @@ input.addEventListener('keydown', (e) => { if (e.key === 'Enter') adicionarNovaT
 completeList.addEventListener('click', (e) => {
     const img = e.target.closest('img[data-action]')
     if (!img) return
-
     const li = img.closest('li[data-id]')
     if (!li) return
-
     const id = parseInt(li.dataset.id, 10)
     const action = img.dataset.action
-
     if (action === 'toggle') {
         const completed = li.dataset.completed === 'true'
         itemFeito(id, completed)
