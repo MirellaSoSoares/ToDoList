@@ -12,3 +12,6 @@ xdebug.log_level=0
 INI
 
 exec "$@"
+
+
+
