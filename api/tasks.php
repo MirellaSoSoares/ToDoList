@@ -52,7 +52,16 @@ function parseBody(): array
 
     return is_array($decoded) ? $decoded : [];
 }
-
+/**
+ * Ensure the `pinned` column exists in the tasks table for priority sorting.
+ */
+function ensurePinnedColumn(PDO $pdo): void
+{
+    $stmt = $pdo->query("SHOW COLUMNS FROM tasks LIKE 'pinned'");
+    if ($stmt->rowCount() === 0) {
+        $pdo->exec("ALTER TABLE tasks ADD COLUMN pinned TINYINT(1) NOT NULL DEFAULT 0");
+    }
+}
 // ── Router ────────────────────────────────────────────────────────────────────
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -60,6 +69,7 @@ $id     = isset($_GET['id']) ? (int) $_GET['id'] : null;
 
 try {
     $pdo = getConnection();
+    ensurePinnedColumn($pdo);
 } catch (\PDOException $e) {
     respondError('Não foi possível conectar ao banco de dados.', 503);
 }
@@ -80,13 +90,18 @@ match ($method) {
  */
 function listTasks(PDO $pdo): never
 {
-    $stmt = $pdo->query('SELECT id, title, completed, created_at, updated_at FROM tasks ORDER BY created_at DESC');
+    $stmt = $pdo->query( 'SELECT id, title, completed, pinned, created_at, updated_at FROM tasks '
+        . 'ORDER BY completed ASC, pinned DESC, '
+        . 'CASE WHEN completed = 0 THEN created_at END ASC, '
+        . 'CASE WHEN completed = 1 THEN updated_at END DESC'
+    );
     $tasks = $stmt->fetchAll();
 
     // Cast types for consistent JSON output
     foreach ($tasks as &$task) {
         $task['id']        = (int) $task['id'];
         $task['completed'] = (bool) $task['completed'];
+        $task['pinned']    = (bool) $task['pinned'];
     }
 
     respond($tasks);
@@ -124,12 +139,13 @@ function createTask(PDO $pdo): never
 
     $newId = (int) $pdo->lastInsertId();
 
-    $stmt = $pdo->prepare('SELECT id, title, completed, created_at, updated_at FROM tasks WHERE id = :id');
+    $stmt = $pdo->prepare('SELECT id, title, completed, pinned, created_at, updated_at FROM tasks WHERE id = :id');
     $stmt->execute([':id' => $newId]);
     $task = $stmt->fetch();
 
     $task['id']        = (int) $task['id'];
     $task['completed'] = (bool) $task['completed'];
+    $task['pinned']    = (bool) $task['pinned'];
 
     respond($task, 201);
 }
@@ -169,8 +185,16 @@ function updateTask(PDO $pdo, ?int $id): never
         if (!is_bool($body['completed'])) {
             respondError('O campo "completed" deve ser um booleano (true ou false).');
         }
-        $sets[]              = 'completed = :completed';
+        $sets[]               = 'completed = :completed';
         $params[':completed'] = $body['completed'] ? 1 : 0;
+    }
+
+    if (array_key_exists('pinned', $body)) {
+        if (!is_bool($body['pinned'])) {
+            respondError('O campo "pinned" deve ser um booleano (true ou false).');
+        }
+        $sets[]            = 'pinned = :pinned';
+        $params[':pinned'] = $body['pinned'] ? 1 : 0;
     }
 
     if (empty($sets)) {
@@ -190,12 +214,13 @@ function updateTask(PDO $pdo, ?int $id): never
         }
     }
 
-    $stmt = $pdo->prepare('SELECT id, title, completed, created_at, updated_at FROM tasks WHERE id = :id');
+    $stmt = $pdo->prepare('SELECT id, title, completed, pinned, created_at, updated_at FROM tasks WHERE id = :id');
     $stmt->execute([':id' => $id]);
     $task = $stmt->fetch();
 
     $task['id']        = (int) $task['id'];
     $task['completed'] = (bool) $task['completed'];
+    $task['pinned']    = (bool) $task['pinned'];
 
     respond($task);
 }

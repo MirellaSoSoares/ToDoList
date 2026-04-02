@@ -1,11 +1,6 @@
 const button = document.querySelector('.button-add-task')
 const input = document.querySelector('.input-task')
 const completeList = document.querySelector('.list-task')
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 7ffc7ceae2c0cc0b17fb297a60ab9d6604aa9243
 const API_URL = 'api/tasks.php'
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -20,15 +15,17 @@ function mostrarTarefas(tarefas) {
             .replace(/'/g, '&#39;')
 
         novaLi += `
-            <li class="task ${tarefa.completed ? 'done' : ''}" data-id="${tarefa.id}" data-completed="${tarefa.completed}">
-                <img class="checkmark" src="./img/check-mark.png" alt="check-na-tarefa" data-action="toggle">
+            <li class="task ${tarefa.completed ? 'done' : ''} ${tarefa.pinned ? 'pinned' : ''}" data-id="${tarefa.id}" data-completed="${tarefa.completed}" data-pinned="${tarefa.pinned}">
+                <img class="check" src="./img/check.png" alt="check-na-tarefa" data-action="toggle">
                 <p>${titulo}</p>
-<<<<<<< HEAD
-                <img class="delete" src="./img/delete.png" alt="deletar-tarefa" data-action="delete">
-=======
-                <img src="./img/edit.png" alt="editar-tarefa" data-action="edit">
-                <img src="./img/delete.png" alt="deletar-tarefa" data-action="delete">
->>>>>>> 7ffc7ceae2c0cc0b17fb297a60ab9d6604aa9243
+                <div class="options">
+                    <button class="options-btn" type="button" data-action="options" aria-label="Mais opções">⋮</button>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item" data-action="pin">📌 Fixar</button>
+                        <button type="button" class="dropdown-item" data-action="edit">✏️ Editar</button>
+                        <button type="button" class="dropdown-item" data-action="delete">🗑️ Excluir</button>
+                    </div>
+                </div>
             </li>
         `
     })
@@ -69,7 +66,7 @@ async function adicionarNovaTarefa() {
 }
 
 // Função para marcar/desmarcar tarefa e disparar confete se marcada como feita
-async function itemFeito(id, concluida) {
+async function itemFeito(id, concluida, li) {
     try {
         const resposta = await fetch(`${API_URL}?id=${id}`, {
             method: 'PUT',
@@ -81,17 +78,39 @@ async function itemFeito(id, concluida) {
             console.error('Erro ao atualizar tarefa:', erro.error)
             return
         }
-        await recarregarTarefas()
-        // Disparar confete somente se tarefa foi marcada como feita
-        if (!concluida) {
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-          })
+
+        if (!concluida && li) {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            })
+
+            li.classList.add('move-to-end')
+            await new Promise((resolve) => setTimeout(resolve, 500))
         }
+
+        await recarregarTarefas()
     } catch (err) {
         console.error('Erro ao atualizar tarefa:', err)
+    }
+}
+
+async function toggleFixar(id, fixada) {
+    try {
+        const resposta = await fetch(`${API_URL}?id=${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pinned: !fixada })
+        })
+        if (!resposta.ok) {
+            const erro = await resposta.json()
+            console.error('Erro ao atualizar preferência de prioridade:', erro.error)
+            return
+        }
+        await recarregarTarefas()
+    } catch (err) {
+        console.error('Erro ao atualizar preferência de prioridade:', err)
     }
 }
 
@@ -114,20 +133,45 @@ recarregarTarefas()
 button.addEventListener('click', adicionarNovaTarefa)
 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') adicionarNovaTarefa() })
 
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.task')) {
+        closeAllDropdowns()
+    }
+})
+
+function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown-menu.open').forEach((menu) => {
+        menu.classList.remove('open')
+    })
+}
+
 completeList.addEventListener('click', (e) => {
-    const img = e.target.closest('img[data-action]')
-    if (!img) return
-    const li = img.closest('li[data-id]')
+    const target = e.target.closest('[data-action]')
+    if (!target) return
+    const li = target.closest('li[data-id]')
     if (!li) return
     const id = parseInt(li.dataset.id, 10)
-    const action = img.dataset.action
+    const action = target.dataset.action
+
+    if (action === 'options') {
+        e.stopPropagation()
+        closeAllDropdowns()
+        const menu = li.querySelector('.dropdown-menu')
+        if (menu) {
+            menu.classList.toggle('open')
+        }
+        return
+    }
+
     if (action === 'toggle') {
         const completed = li.dataset.completed === 'true'
-        itemFeito(id, completed)
+        itemFeito(id, completed, li)
     } else if (action === 'delete') {
         deletarItem(id)
-    } 
-    else if (action === 'edit') {
+    } else if (action === 'pin') {
+        const pinned = li.dataset.pinned === 'true'
+        toggleFixar(id, pinned)
+    } else if (action === 'edit') {
         const p = li.querySelector ('p')
         const tituloAtual = p.textContent
         // Substituir o <p> pelo input com o texto atual
