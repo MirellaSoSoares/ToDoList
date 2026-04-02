@@ -1,11 +1,8 @@
 const button = document.querySelector('.button-add-task')
 const input = document.querySelector('.input-task')
 const completeList = document.querySelector('.list-task')
-<<<<<<< HEAD
-=======
 
 
->>>>>>> 7ffc7ceae2c0cc0b17fb297a60ab9d6604aa9243
 const API_URL = 'api/tasks.php'
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -23,12 +20,8 @@ function mostrarTarefas(tarefas) {
             <li class="task ${tarefa.completed ? 'done' : ''}" data-id="${tarefa.id}" data-completed="${tarefa.completed}">
                 <img class="checkmark" src="./img/check-mark.png" alt="check-na-tarefa" data-action="toggle">
                 <p>${titulo}</p>
-<<<<<<< HEAD
-                <img class="delete" src="./img/delete.png" alt="deletar-tarefa" data-action="delete">
-=======
                 <img src="./img/edit.png" alt="editar-tarefa" data-action="edit">
                 <img src="./img/delete.png" alt="deletar-tarefa" data-action="delete">
->>>>>>> 7ffc7ceae2c0cc0b17fb297a60ab9d6604aa9243
             </li>
         `
     })
