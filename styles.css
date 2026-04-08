@@ -125,13 +125,14 @@ h1 {
 .dropdown-menu {
     display: none;
     position: absolute;
-    top: 110%;
+    top: 100%;
     right: 0;
     background-color: white;
     border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
     border-radius: 6px;
-    min-width: 110px;
+    width: max-content;
+    min-width: 0;
     z-index: 10;
 }
 
@@ -180,4 +181,79 @@ h1 {
         transform: translateY(100px) scale(0.95);
         opacity: 0;
     }
+}
+
+/* Agrupamento dos controles do timer (linha com play e toggle do submenu) */
+.dropdown-timer-vertical { margin-top: 2px; }
+
+/* Linha que contém o play e o botão de abrir submenu */
+.dropdown-timer-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative; /* importante: o submenu será posicionado relativo a esta linha */
+}
+
+/* Toggle do submenu: aparência igual aos outros items, porém menor largura */
+.submenu-toggle {
+  padding: 6px 8px;
+  width: auto;
+}
+
+/* Submenu posicionado abaixo da linha, com largura igual ao menu pai */
+.dropdown-submenu {
+  position: absolute;
+  top: calc(100% + 6px);  /* aparece logo abaixo da linha */
+  left: 0;
+  width: max-content;       /* ocupa toda a largura do .dropdown-menu */
+  display: none;          /* escondido por padrão */
+  flex-direction: column;
+  background:rgba(247, 249, 245, 0.756);    /* herda cor do dropdown (ou use #fff) */
+  border: 1px solid rgba(187, 25, 25, 0.08);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+  z-index: 60;
+  padding: 6px 0;
+  border-radius: 4px;
+}
+
+/* abrir submenu */
+.dropdown-submenu.open { display: flex; }
+
+/* itens dentro do submenu — formato como os demais dropdown-item */
+.dropdown-submenu .dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* foco visual simples (manter acessibilidade) */
+.dropdown-submenu .dropdown-item:focus {
+  outline: none;
+  background: rgba(0,0,0,0.04);
+}
+
+/* Se existirem regras anteriores que forçam botões a terem "caixa",
+   sobrescrevemos para os dropdown-items do timer: */
+.dropdown-timer-vertical .dropdown-item {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+/* Hover nos botões do timer (iniciar/pausar e reiniciar) */
+.dropdown-timer-vertical .dropdown-item:hover,
+.dropdown-submenu .dropdown-item:hover {
+  background-color: #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-timer-vertical .dropdown-item:active,
+.dropdown-submenu .dropdown-item:active {
+  background-color: #e0e0e0;
 }
