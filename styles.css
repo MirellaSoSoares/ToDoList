@@ -87,9 +87,8 @@ h1 {
     background-color: #fef9d1;
 }
 
-.task.done {
+.task.completed {
     background-color: #e4ffe0;
-    text-decoration: line-through;
 }
 
 .check {
