@@ -30,6 +30,11 @@ function showTaskTimerDisplay(li, visible) {
     }
 }
 
+function getTimerToggleLabel(timerRunning, hasStartedOnce) {
+    if (timerRunning) return '⏸️ Pausar timer'
+    return hasStartedOnce ? '▶️ Retomar timer' : '▶️ Iniciar timer'
+}
+
 function stopLocalInterval(id) {
     if (activeTimerIntervals.has(id)) {
         clearInterval(activeTimerIntervals.get(id))
@@ -99,6 +104,7 @@ function mostrarTarefas(tarefas) {
         const timeSpent = tarefa.time_spent || 0
         const timerRunning = tarefa.timer_running ? 'true' : 'false'
         const timerStarted = tarefa.timer_started_at ? tarefa.timer_started_at : ''
+        const timerStartedOnce = (tarefa.timer_started_at || timeSpent > 0) ? 'true' : 'false'
         const pinText = tarefa.pinned ? '📌 Desfixar' : '📌 Fixar'
         novaLi += `
             <li class="task ${tarefa.completed ? 'completed' : ''} ${tarefa.pinned ? 'pinned' : ''}" 
@@ -107,7 +113,8 @@ function mostrarTarefas(tarefas) {
                 data-pinned="${tarefa.pinned}"
                 data-time-spent="${timeSpent}"
                 data-timer-running="${timerRunning}"
-                data-timer-started="${timerStarted}">
+                data-timer-started="${timerStarted}"
+                data-timer-started-once="${timerStartedOnce}">
                 <img class="check" src="./img/check.png" alt="check-na-tarefa" data-action="toggle">
                 <p>${titulo}</p>
 
@@ -130,7 +137,7 @@ function mostrarTarefas(tarefas) {
                       <div class="dropdown-timer-row" style="display:flex; align-items:center; gap:6px; position:relative;">
                         <!-- botão principal: play/pause (usa mesma classe dropdown-item) -->
                         <button type="button" class="dropdown-item" data-action="timer-toggle" title="Iniciar / Pausar">
-                          ${tarefa.timer_running ? '⏸️ Pausar timer' : '▶️ Iniciar timer'}
+                          ${tarefa.timer_running ? '⏸️ Pausar timer' : timerStartedOnce === 'true' ? '▶️ Retomar timer' : '▶️ Iniciar timer'}
                         </button>
 
                         <!-- toggle do submenu (pequeno botão ao lado) -->
@@ -285,6 +292,7 @@ async function startTimerAction(id, li) {
     const nowISO = new Date().toISOString()
     li.setAttribute('data-timer-running', 'true')
     li.setAttribute('data-timer-started', nowISO)
+    li.setAttribute('data-timer-started-once', 'true')
     const btn = li.querySelector('[data-action="timer-toggle"]')
     if (btn) btn.textContent = '⏸️ Pausar timer'
     const baseTime = parseInt(li.getAttribute('data-time-spent') || '0', 10) || 0
@@ -321,8 +329,9 @@ async function stopTimerAction(id, li) {
     li.setAttribute('data-time-spent', String(newTotal))
     li.setAttribute('data-timer-running', 'false')
     li.setAttribute('data-timer-started', '')
+    if (newTotal > 0) li.setAttribute('data-timer-started-once', 'true')
     const btn = li.querySelector('[data-action="timer-toggle"]')
-    if (btn) btn.textContent = '▶️ Iniciar timer'
+    if (btn) btn.textContent = getTimerToggleLabel(false, li.getAttribute('data-timer-started-once') === 'true')
     stopLocalInterval(parseInt(li.getAttribute('data-id'), 10))
     // esconder display
     showTaskTimerDisplay(li, false)
@@ -352,7 +361,8 @@ async function resetTimerAction(id, li) {
     stopLocalInterval(parseInt(li.getAttribute('data-id'), 10))
     // garantir emoji do play após reset
     const btn = li.querySelector('[data-action="timer-toggle"]')
-    if (btn) btn.textContent = '▶️ Iniciar timer'
+    li.setAttribute('data-timer-started-once', 'false')
+    if (btn) btn.textContent = getTimerToggleLabel(false, false)
     // mostrar tempo zerado
     const display = getTaskTimerDisplay(li)
     if (display) display.textContent = '00:00:00'
@@ -382,10 +392,11 @@ function initializeTimersForDropdown(li) {
     const timerStartedAt = li.getAttribute('data-timer-started') || null
 
     const btn = li.querySelector('[data-action="timer-toggle"]')
+    const timerStartedOnce = li.getAttribute('data-timer-started-once') === 'true'
     if (timerRunning) {
         if (btn) btn.textContent = '⏸️ Pausar timer'
     } else {
-        if (btn) btn.textContent = '▶️ Iniciar timer'
+        if (btn) btn.textContent = getTimerToggleLabel(false, timerStartedOnce)
     }
 
     if (timerRunning && timerStartedAt) {
