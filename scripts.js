@@ -458,17 +458,17 @@ completeList.addEventListener('click', (e) => {
                 const novoTitulo = inputEdit.value.trim()
                 if (!novoTitulo) return
                 try {
-                   const resposta = await fetch(`${API_URL}?id=${id}`, {
+                    const resposta = await fetch(`${API_URL}?id=${id}`, {
                         method: 'PUT',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({title: novoTitulo})
-                   })
-                   if (!resposta.ok) {
-                       const erro = await resposta.json()
-                       console.error('Erro ao atualizar tarefa:', erro.error)
-                       return
-                   }
-                   await recarregarTarefas()
+                    })
+                    if (!resposta.ok) {
+                        const erro = await resposta.json()
+                        console.error('Erro ao atualizar tarefa:', erro.error)
+                        return
+                    }
+                    await recarregarTarefas()
                 } catch (err) {
                     console.error('Erro ao atualizar tarefa:', err)
                 }
