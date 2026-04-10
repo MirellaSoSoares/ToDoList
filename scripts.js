@@ -47,6 +47,7 @@ function adjustDisplaysFromDOM() {
         const timeSpent = parseInt(li.getAttribute('data-time-spent') || '0', 10) || 0
         const timerRunning = li.getAttribute('data-timer-running') === 'true'
         const timerStartedAt = li.getAttribute('data-timer-started') || null
+        const completed = li.getAttribute('data-completed') === 'true'
         const display = getTaskTimerDisplay(li)
         if (!display) return
         if (timerRunning && timerStartedAt) {
@@ -57,6 +58,10 @@ function adjustDisplaysFromDOM() {
             showTaskTimerDisplay(li, true)
             // REINICIALIZAR o interval para este timer que está rodando
             startLocalInterval(id, li, timeSpent, startedAtMS)
+        } else if (completed && timeSpent > 0) {
+            // Para tarefas concluídas com tempo gasto, mostrar o tempo total
+            display.textContent = formatDuration(timeSpent)
+            showTaskTimerDisplay(li, true)
         } else {
             display.textContent = ''
             showTaskTimerDisplay(li, false)
@@ -94,8 +99,9 @@ function mostrarTarefas(tarefas) {
         const timeSpent = tarefa.time_spent || 0
         const timerRunning = tarefa.timer_running ? 'true' : 'false'
         const timerStarted = tarefa.timer_started_at ? tarefa.timer_started_at : ''
+        const pinText = tarefa.pinned ? '📌 Desfixar' : '📌 Fixar'
         novaLi += `
-            <li class="task ${tarefa.completed ? 'done' : ''} ${tarefa.pinned ? 'pinned' : ''}" 
+            <li class="task ${tarefa.completed ? 'completed' : ''} ${tarefa.pinned ? 'pinned' : ''}" 
                 data-id="${tarefa.id}" 
                 data-completed="${tarefa.completed}" 
                 data-pinned="${tarefa.pinned}"
@@ -115,11 +121,11 @@ function mostrarTarefas(tarefas) {
                 </div>
 
                 <div class="dropdown-menu">
-                    <button type="button" class="dropdown-item" data-action="pin">📌 Fixar</button>
-                    <button type="button" class="dropdown-item" data-action="edit">✏️ Editar</button>
+                    ${tarefa.completed ? '' : `<button type="button" class="dropdown-item" data-action="pin">${pinText}</button>`}
+                    ${tarefa.completed ? '' : `<button type="button" class="dropdown-item" data-action="edit">✏️ Editar</button>`}
                     <button type="button" class="dropdown-item" data-action="delete">🗑️ Excluir</button>
 
-                    <!-- Timer com submenu: botão play/pause + botão que abre submenu; submenu contém reiniciar -->
+                    ${tarefa.completed ? '' : `<!-- Timer com submenu: botão play/pause + botão que abre submenu; submenu contém reiniciar -->
                     <div class="dropdown-timer-vertical">
                       <div class="dropdown-timer-row" style="display:flex; align-items:center; gap:6px; position:relative;">
                         <!-- botão principal: play/pause (usa mesma classe dropdown-item) -->
@@ -139,7 +145,7 @@ function mostrarTarefas(tarefas) {
                           </button>
                         </div>
                       </div>
-                    </div>
+                    </div>`}
 
                 </div>
             </li>
@@ -186,11 +192,39 @@ async function adicionarNovaTarefa() {
 
 // Função para marcar/desmarcar tarefa e disparar confete se marcada como feita
 async function itemFeito(id, concluida, li) {
+    let updateData = { completed: !concluida }
+
+    // Se estiver marcando como concluída e o timer estiver rodando, parar o timer e incluir na atualização
+    if (!concluida && li.getAttribute('data-timer-running') === 'true') {
+        const startedAt = li.getAttribute('data-timer-started')
+        const baseTime = parseInt(li.getAttribute('data-time-spent') || '0', 10) || 0
+        let added = 0
+        if (startedAt) {
+            const startedAtMS = new Date(startedAt).getTime()
+            added = Math.max(0, Math.floor((Date.now() - startedAtMS) / 1000))
+        }
+        const newTotal = baseTime + added
+        li.setAttribute('data-time-spent', String(newTotal))
+        li.setAttribute('data-timer-running', 'false')
+        li.setAttribute('data-timer-started', '')
+        stopLocalInterval(id)
+        // Mostrar o display com o tempo total
+        const display = getTaskTimerDisplay(li)
+        if (display) {
+            display.textContent = formatDuration(newTotal)
+            showTaskTimerDisplay(li, true)
+        }
+        // Incluir na atualização do servidor
+        updateData.timer_running = false
+        updateData.timer_started_at = null
+        updateData.time_spent = newTotal
+    }
+
     try {
         const resposta = await fetch(`${API_URL}?id=${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ completed: !concluida })
+            body: JSON.stringify(updateData)
         })
         if (!resposta.ok) {
             const erro = await resposta.json()
