@@ -116,11 +116,13 @@ function mostrarTarefas(tarefas) {
                 data-timer-started="${timerStarted}"
                 data-timer-started-once="${timerStartedOnce}">
                 <img class="check" src="./img/check.png" alt="check-na-tarefa" data-action="toggle">
-                <p>${titulo}</p>
+                <div class= "tarefa">
+                    <p>${titulo}</p>
 
-                <!-- container do timer que fica na linha da tarefa (lado direito) -->
-                <div class="task-timer" aria-hidden="true">
-                    <span class="task-timer-display"></span>
+                    <!-- container do timer que fica na linha da tarefa (lado direito) -->
+                    <div class="task-timer" aria-hidden="false">
+                        <span class="task-timer-display"></span>
+                    </div>
                 </div>
 
                 <div class="options">

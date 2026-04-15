@@ -143,8 +143,8 @@ function createTask(PDO $pdo): never
     if ($title === '') {
         respondError('O campo "title" é obrigatório e não pode estar vazio.');
     }
-    if (mb_strlen($title) > 255) {
-        respondError('O campo "title" não pode ter mais de 255 caracteres.');
+    if (mb_strlen($title) > 50) {
+        respondError('O campo "title" não pode ter mais de 50 caracteres.');
     }
     $stmt = $pdo->prepare('INSERT INTO tasks (title) VALUES (:title)');
     $stmt->execute([':title' => $title]);
@@ -192,8 +192,8 @@ function updateTask(PDO $pdo, ?int $id): never
         if ($title === '') {
             respondError('O campo "title" não pode estar vazio.');
         }
-        if (mb_strlen($title) > 255) {
-            respondError('O campo "title" não pode ter mais de 255 caracteres.');
+        if (mb_strlen($title) > 50) {
+            respondError('O campo "title" não pode ter mais de 50 caracteres.');
         }
         $sets[]           = 'title = :title';
         $params[':title'] = $title;

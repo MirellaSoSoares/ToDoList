@@ -63,7 +63,7 @@ function ensureTasksTable(PDO $pdo): void
     $sql = <<<SQL
 CREATE TABLE IF NOT EXISTS `tasks` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `title` VARCHAR(255) NOT NULL,
+  `title` VARCHAR(50) NOT NULL,
   `completed` TINYINT(1) NOT NULL DEFAULT 0,
   `pinned` TINYINT(1) NOT NULL DEFAULT 0,
   `time_spent` INT NOT NULL DEFAULT 0,         -- segundos acumulados
@@ -91,7 +91,7 @@ function getTasksTableCreateSQL(): string
     return <<<SQL
 CREATE TABLE `tasks` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `title` VARCHAR(255) NOT NULL,
+  `title` VARCHAR(50)) NOT NULL,
   `completed` TINYINT(1) NOT NULL DEFAULT 0,
   `pinned` TINYINT(1) NOT NULL DEFAULT 0,
   `time_spent` INT NOT NULL DEFAULT 0,

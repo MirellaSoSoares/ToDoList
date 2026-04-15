@@ -69,6 +69,26 @@ h1 {
     margin-top: 40px;
 }
 
+.task-timer-display {
+
+    justify-items: end;
+    display: flex;
+    margin: auto;
+    position: relative;
+    flex-wrap: wrap;
+    align-content: center;
+    
+}
+
+.tarefa{
+    flex: 1;
+    display: flex;
+    margin: auto;
+    position: relative;
+
+
+}
+
 .task {
     background-color: white;
     box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.2);
@@ -80,7 +100,8 @@ h1 {
     font-size: 16px;
     font-weight: 400;
     position: relative;
-    height: 40px;
+    min-height: 40px;
+    padding: 8px;
 }
 
 .task.pinned {
@@ -99,16 +120,18 @@ h1 {
 }
 
 .task p {
-    flex: 1;
     margin: 0;
     padding: 0 10px;
     word-break: break-word;
+    flex: auto;
 }
 
 .options {
     position: relative;
     margin-left: 8px;
     flex-shrink: 0;
+    display: grid;
+    margin-left: auto;
 }
 
 .options-btn {
@@ -131,6 +154,7 @@ h1 {
     width: max-content;
     min-width: 0;
     z-index: 10;
+    align-items: left;
 }
 
 .dropdown-menu.open {

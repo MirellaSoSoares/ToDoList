@@ -8,7 +8,7 @@ App de lista de tarefas com CRUD completo (criar, listar, marcar concluído, del
 - Opção de marcar a tarefa como concluída
 - Deletar tarefa
 - Edição da tarefa
-- Dar prioridade a aquelas que são mais importantes
+- Timer para saber total de tempo gasto na tarefa
 ---
 
 ---
@@ -41,5 +41,4 @@ App de lista de tarefas com CRUD completo (criar, listar, marcar concluído, del
 ## Tarefas a implementar
 
 - **Confetes ao completar tarefa** - Exibir animação de confetes quando tarefa é marcada como concluída
-- **Marcar prioridade** - Adicionar opção de marcar com um pin tarefas que devem ser priorizadas, assim as deixando no topo da tabela
 - **Editar tarefa** - Permitir editar texto de tarefas já criadas
